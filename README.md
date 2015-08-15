@@ -2,8 +2,6 @@
 
 My slides and code for PyGotham 2015. All in Python 3!
 
-Slides
-
 RTBTC is a Flask app that subscribes to the [Coinbase Exchange websocket feed](https://docs.exchange.coinbase.com/?python#websocket-feed) and writes data to InfluxDB.
 
 ## Installation
