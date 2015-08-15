@@ -93,8 +93,8 @@ def process_metrics_parameters(request_params):
 
 def process_results(influxdb_results):
     series = influxdb_results.raw
-    if series:
-        return series['values']
+    if series and series['series'] and series['series'][0]:
+        return series['series'][0]['values']
     return []
 
 
