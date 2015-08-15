@@ -107,7 +107,9 @@ def metric_view(view):
     @functools.wraps(view)
     def wrapper(*args, **kwargs):
         params = process_metrics_parameters(request.args)
-        results = influxdb.engine.execute(view(*params))
+        query = view(*params)
+        app.logger.debug(str(query))
+        results = influxdb.engine.execute(query)
         data = process_results(results)
         return Response(
             json.dumps(data),

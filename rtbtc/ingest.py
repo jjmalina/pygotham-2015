@@ -10,6 +10,7 @@
 import asyncio
 import json
 import websockets
+from datetime import datetime
 
 from rtbtc import create_app
 from rtbtc.extensions import influxdb
@@ -100,7 +101,7 @@ def coinbase_feed():
 
             if len(points) > BATCH_SIZE:
                 influxdb.write_points(points)  # a blocking call unfortunately
-                application.logger.info("Wrote %i points" % len(points))
+                application.logger.info("Wrote %i points at %s" % (len(points), datetime.utcnow().isoformat()))
                 points = []
         except Exception as e:
             application.logger.exception(e)

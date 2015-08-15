@@ -509,7 +509,7 @@ div.output_prompt {
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <ul>
-<li>You need to persist the counter state somewhere</li>
+<li>Parallelizing the counting is a tricky problem</li>
 </ul>
 
 </div>
@@ -522,7 +522,7 @@ div.output_prompt {
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <ul>
-<li>Parallelizing the counting is a tricky problem</li>
+<li>You need to persist the counter state somewhere</li>
 </ul>
 
 </div>
@@ -669,9 +669,9 @@ div.output_prompt {
 <li>Anything that leads to a crash will erase the state of the real-time system<ul>
 <li>Bad deploy</li>
 <li>Out of memory</li>
-<li>Delayed upstream data</li>
 </ul>
 </li>
+<li>Delayed upstream data will give you inaccurate metrics</li>
 </ul>
 
 </div>
@@ -1017,12 +1017,10 @@ div.output_prompt {
 <span class="c"># Assume we have our visit events coming in from a socket</span>
 <span class="n">events</span> <span class="o">=</span> <span class="n">ssc</span><span class="o">.</span><span class="n">socketTextStream</span><span class="p">(</span><span class="s">&quot;localhost&quot;</span><span class="p">,</span> <span class="mi">1337</span><span class="p">)</span>
 
-
 <span class="k">def</span> <span class="nf">process_event</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
     <span class="n">ts</span><span class="p">,</span> <span class="n">campaign</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">)</span>
     <span class="n">minute</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">utcfromtimetamp</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">ts</span><span class="p">))</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%Y-%m-%dT%H:%M&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">minute</span> <span class="o">+</span> <span class="n">campaign</span><span class="p">,</span> <span class="mi">1</span>
-
 
 <span class="k">def</span> <span class="nf">persist_count</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">count</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Take an hourly count and persist it</span>
@@ -1031,10 +1029,8 @@ div.output_prompt {
 
     
 <span class="n">events</span> \
-    
     <span class="c"># parse the data from the socket</span>
     <span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">process_event</span><span class="p">)</span> \ 
-
     <span class="c"># group events by their key every 60 seconds in a window</span>
     <span class="o">.</span><span class="n">groupByKeyAndWindow</span><span class="p">(</span><span class="n">windowDuration</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">slideDuration</span><span class="o">=</span><span class="mi">60</span><span class="p">)</span> \
     <span class="o">.</span><span class="n">foreachRDD</span><span class="p">(</span>
@@ -1059,8 +1055,10 @@ div.output_prompt {
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="The-Good">The Good<a class="anchor-link" href="#The-Good">&#182;</a></h3><ul>
 <li>Python works out of the box</li>
-<li>Programming model is more simple than Storm
-** no topology, just chain together your functions</li>
+<li>Programming model is more simple than Storm<ul>
+<li>no topology, just chain together your functions</li>
+</ul>
+</li>
 <li>Built-in APIs for analytical computations, i.e count, group by, reduce</li>
 <li>Fault tolerant and scalable</li>
 </ul>
@@ -1309,10 +1307,9 @@ curl -i -XPOST 'http://localhost:8086/write?db=realtime_analytics' --data-binary
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Continuous-Queries">Continuous Queries<a class="anchor-link" href="#Continuous-Queries">&#182;</a></h3><ol>
-<li>Create a new retention policy: <code>CREATE RETENTION POLICY historical_metrics ON realtime_analytics DURATION INF REPLICATION 1;</code></li>
-<li>Add a continuous query</li>
-</ol>
+<h3 id="Continuous-Queries">Continuous Queries<a class="anchor-link" href="#Continuous-Queries">&#182;</a></h3><p>1 - Create a new retention policy:</p>
+<p><code>CREATE RETENTION POLICY historical_metrics ON realtime_analytics DURATION INF REPLICATION 1;</code></p>
+<p>2 - Add a continuous query</p>
 
 <pre><code>CREATE CONTINUOUS QUERY historical_metrics_count_impressions_1d ON realtime_analytics BEGIN
   SELECT COUNT(DISTINCT(user_id)) INTO realtime_analytics.historical_metrics.impressions_count_1d FROM visits GROUP BY time(1d), *
