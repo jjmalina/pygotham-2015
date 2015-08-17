@@ -1,6 +1,8 @@
 # PyGotham 2015 - Building a Real-Time Analytics Service with InfluxDB
 
-My slides and code for PyGotham 2015. All in Python 3!
+My slides and code for PyGotham 2015, which you can watch the video for [here](http://www.pyvideo.org/video/3815/building-a-real-time-analytics-service-with-influ).  
+
+This all runs in Python 3 btw. Haven't tested Python 2.  
 
 RTBTC is a Flask app that subscribes to the [Coinbase Exchange websocket feed](https://docs.exchange.coinbase.com/?python#websocket-feed) and writes data to InfluxDB.
 
